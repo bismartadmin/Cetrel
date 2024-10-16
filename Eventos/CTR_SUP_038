@@ -1,0 +1,25 @@
+--Obrigatoriedade de preenchimento do motivo do cancelamento do subcontrato.
+DECLARE
+motivo_cancelamento_ VARCHAR2(32000) := NULL;
+sub_con_no_ VARCHAR2(32000) := '&NEW:SUB_CON_NO';
+rowkey_ VARCHAR2(32000) := '&NEW:ROWKEY';
+
+BEGIN
+
+select 'S'
+into motivo_cancelamento_ 
+from sub_contract_cft b
+where b.CF$_MOTIVO_CANCELAMENTO IS NOT NULL
+and b.ROWKEY = rowkey_ ;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    motivo_cancelamento_ := 'N';
+  
+IF motivo_cancelamento_ = 'N'
+
+THEN
+RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_038: O campo Motivo Cancelamento deve ser preenchido.');
+
+END IF;
+
+END; 
