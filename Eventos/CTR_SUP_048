@@ -1,0 +1,14 @@
+--Não permitir requisição de compra sem informação de comprador e nem com * informado como comprador.
+DECLARE
+
+buyer_code_ VARCHAR2(30) := '&NEW:BUYER_CODE';
+
+BEGIN
+  
+IF buyer_code_ IS NULL OR buyer_code_ = '*' THEN  
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_048: O campo Comprador é obrigatório e não pode ser *.');
+
+END IF;
+
+END; 
