@@ -1,0 +1,28 @@
+select SUBSTR(TRIM(A.KEYS), INSTR(A.KEYS, '=') + 1, LENGTH(A.KEYS) - INSTR(A.KEYS, '=') - 1) AS N_REQUISICAO,
+       a.time_stamp         DATA_ALTERACAO,
+a.username USUARIO,
+       CASE WHEN b.old_value = '<UNDEFINED>' THEN 'Criação'
+            WHEN b.new_value IS NULL THEN 'Remoção' ELSE 'Atualização' END TIPO_HISTORICO,
+       CASE WHEN b.old_value = 'Released' THEN 'Liberado'
+         WHEN b.old_value = 'Planned' THEN 'Planejado'
+           WHEN b.old_value = 'Cancelled' THEN 'Cancelado'
+             WHEN b.old_value = 'Closed' THEN 'Fechado'
+               WHEN b.old_value = 'Confirmed' THEN 'Confirmado'
+                 WHEN b.old_value = 'Received' THEN 'Recebido'
+                   WHEN b.old_value = 'Partially Authorized' THEN 'Parcialmente Autorizado'
+                     WHEN b.old_value = 'Authorized' THEN 'Autorizado' END           STATUS_ANTIGO,
+       CASE WHEN b.new_value = 'Released' THEN 'Liberado'
+         WHEN b.new_value = 'Planned' THEN 'Planejado'
+           WHEN b.new_value = 'Cancelled' THEN 'Cancelado'
+             WHEN b.new_value = 'Closed' THEN 'Fechado'
+               WHEN b.new_value = 'Confirmed' THEN 'Confirmado'
+                 WHEN b.new_value = 'Received' THEN 'Recebido'
+                   WHEN b.new_value = 'Partially Authorized' THEN 'Parcialmente Autorizado'
+                     WHEN b.new_value = 'Authorized' THEN 'Autorizado' END           STATUS_ATUAL
+  from ifsinfo.bs_f_history_log A
+  join ifsctr.history_log_attribute B  on a.log_id = b.log_id
+  where a.table_name LIKE 'PURCHASE_REQUISITION_TAB'
+  and b.column_name = 'ROWSTATE'
+  and (b.old_value IS NOT NULL AND b.new_value IS NOT NULL)
+  and TO_NUMBER(SUBSTR(TRIM(A.KEYS), INSTR(A.KEYS, '=') + 1, LENGTH(A.KEYS) - INSTR(A.KEYS, '=') - 1)) = '&N_REQUISICAO'
+  order by a.time_stamp desc
