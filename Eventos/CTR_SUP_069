@@ -1,0 +1,22 @@
+--Obrigatoriedade de motivo em RSDC, RSFU, RMDC, RMFU
+
+DECLARE
+
+rowkey_ varchar2(4000) := '&NEW:ROWKEY';
+purchase_code_ varchar2(4000) := '&NEW:PURCHASE_CODE';
+motivo_ varchar2(4000) := NULL;
+
+BEGIN
+  
+SELECT 'S'
+INTO motivo_
+FROM PURCHASE_REQ_LINE_PART_CFT PRLP
+WHERE PRLP.ROWKEY = rowkey_
+AND PRLP.CF$_MOTIVO IS NOT NULL;
+EXCEPTION WHEN NO_DATA_FOUND THEN motivo_ := 'N';
+
+  IF purchase_code_ IN ('RSDC','RSFU','RMDC','RMFU')
+    AND motivo_ = 'N' THEN
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_069: Preenchimento do Motivo é obrigatório em requisições RSDC, RSFU, RMDC, RMFU.');
+   END IF;
+END;
