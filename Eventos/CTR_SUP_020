@@ -1,0 +1,13 @@
+--Padronizar na requisição de serviços valor e não quantidade, para evitar a situação de 2 unidades de serviços.
+BEGIN
+
+  IF ('&NEW:DESCRIPTION' LIKE '%SERVIÇOS%') 
+   AND
+  ('&NEW:ORIGINAL_QTY' > 1)
+  THEN
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_020: Serviço não pode haver mais de 1 item');
+  
+  END IF;
+
+END;
