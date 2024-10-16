@@ -1,0 +1,7 @@
+--Impedir que linhas liberadas sejam deletadas 
+
+BEGIN
+
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_070: Linhas liberadas não podem ser deletadas.');
+
+END;
