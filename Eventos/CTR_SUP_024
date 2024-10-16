@@ -1,0 +1,43 @@
+--Não permitir aprovar parte relacionada sem justificativa de parte relacionada
+DECLARE
+just_parte_relacionada_ VARCHAR2(32000) := NULL;
+parte_relacionada_ VARCHAR2(32000) := NULL;
+inquiry_no_ VARCHAR2(32000) := '&NEW:INQUIRY_NO';
+line_no_ VARCHAR2(32000) := '&NEW:LINE_NO';
+vendor_no_ VARCHAR2(32000) := '&NEW:VENDOR_NO';
+
+BEGIN
+
+BEGIN
+
+select 'S'
+into just_parte_relacionada_ 
+from purchase_map_line_cfv b
+where b.CF$_JUST_PARTE_RELACIONADA IS NOT NULL
+and b.inquiry_no = inquiry_no_ 
+and b.line_no = line_no_ ;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+    just_parte_relacionada_ := 'N';
+  
+BEGIN
+select 'S'
+into parte_relacionada_ 
+from PARTES_RELACIONADAS_CLV a
+where a.CF$_RAZAO_SOCIAL IS NOT NULL
+AND a.CF$_CNPJ_CPF = vendor_no_ ;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+parte_relacionada_ := 'N';
+END;
+
+IF parte_relacionada_ = 'S'
+AND just_parte_relacionada_ = 'N'
+
+THEN
+RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_024: Caso o fornecedor seja Parte Relacionada, deverá ser preenchido o campo Justificativa Parte Relacionada no Mapa de Compra. Esta ordem não será aprovada.');
+
+END IF;
+
+    END;
+END;
