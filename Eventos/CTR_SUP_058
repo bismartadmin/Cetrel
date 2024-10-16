@@ -1,0 +1,76 @@
+--Carregar Condição de pagamento e condição de entrega da ordem de compra na nota fiscal externa
+DECLARE
+   v_order VARCHAR2(50) := '&NEW:ORDER_NO';
+   v_note VARCHAR2(50) := '&NEW:EXT_FISCAL_NOTE_ID';
+   v_pag VARCHAR2(50);
+   v_pag_note VARCHAR2(50);
+   v_objid VARCHAR2(100);
+   v_objversion VARCHAR2(100);
+   v_cond VARCHAR2(100);
+   v_cond_note VARCHAR2(100);
+   p0_ VARCHAR2(32000) := '';
+   p1_ VARCHAR2(32000);
+   p2_ VARCHAR2(32000);
+   p3_ VARCHAR2(32000);
+   p4_ VARCHAR2(32000) := 'DO';
+BEGIN
+   BEGIN
+      SELECT PAY_TERM_ID INTO v_pag
+      FROM PURCHASE_ORDER
+      WHERE ORDER_NO = v_order;
+   EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+         v_pag := NULL;
+   END;
+
+   BEGIN 
+      SELECT PAY_TERM_ID INTO v_pag_note
+      FROM EXT_FISCAL_NOTE
+      WHERE ext_fiscal_note_id = v_note;
+   EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        v_pag_note := NULL;
+   END;
+  
+  IF v_pag IS NOT NULL AND  v_pag <> v_pag_note or v_pag_note is null and v_pag IS NOT NULL THEN 
+      SELECT OBJID, Objversion INTO v_objid, v_objversion
+      FROM EXT_FISCAL_NOTE
+      WHERE ext_fiscal_note_id = v_note;
+
+      p1_ := v_objid;
+      p2_ := v_objversion;
+      p3_ := 'PAY_TERM_ID' || chr(31) || v_pag || chr(30);
+
+      IFSCTR.EXT_FISCAL_NOTE_API.MODIFY__(p0_, p1_, p2_, p3_, p4_);
+   END IF;
+
+   BEGIN
+      SELECT DELIVERY_TERMS INTO v_cond
+      FROM PURCHASE_ORDER
+      WHERE ORDER_NO = v_order;
+   EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+         v_cond := NULL;
+   END;
+
+   BEGIN 
+      SELECT DELIVERY_TERMS INTO v_cond_note
+      FROM EXT_FISCAL_NOTE
+      WHERE ext_fiscal_note_id = v_note;
+   EXCEPTION
+      WHEN NO_DATA_FOUND THEN
+        v_cond_note := NULL;
+   END;
+
+IF v_cond IS NOT NULL AND  v_cond <> v_cond_note or v_cond_note is null and v_cond IS NOT NULL THEN 
+      SELECT OBJID, Objversion INTO v_objid, v_objversion
+      FROM EXT_FISCAL_NOTE
+      WHERE ext_fiscal_note_id = v_note;
+
+      p1_ := v_objid;
+      p2_ := v_objversion;
+      p3_ := 'DELIVERY_TERMS' || chr(31) || v_cond || chr(30);
+
+      IFSCTR.EXT_FISCAL_NOTE_API.MODIFY__(p0_, p1_, p2_, p3_, p4_);
+   END IF;
+END;
