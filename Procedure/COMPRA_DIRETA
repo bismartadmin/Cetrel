@@ -1,0 +1,49 @@
+CREATE OR REPLACE PROCEDURE COMPRA_DIRETA (attr_ IN VARCHAR2) IS
+   p0_ VARCHAR2(32000) := '';
+   p1_ VARCHAR2(32000) := NULL;
+   p2_ VARCHAR2(32000) := NULL;
+   p3_ VARCHAR2(32000) := NULL;
+   p4_ VARCHAR2(32000) := 'DO';
+   rowkey_ VARCHAR2(32000) := client_sys.Get_Item_Value('rowkey', attr_);
+   purchase_code_ VARCHAR2(32000) := client_sys.Get_Item_Value('purchase_code', attr_);
+   part_no_ VARCHAR2(32000) := client_sys.Get_Item_Value('part_no', attr_);
+   company_ VARCHAR2(32000) := client_sys.Get_Item_Value('company', attr_);
+   order_code_ VARCHAR2(32000) := client_sys.Get_Item_Value('order_code', attr_);
+   buyer_code_ VARCHAR2(32000) := NULL;
+
+BEGIN
+   BEGIN
+      SELECT A.OBJID, A.OBJVERSION, A.PURCHASE_CODE
+      INTO p1_, p2_, purchase_code_
+      FROM PURCHASE_REQ_LINE_PART A
+      WHERE A.OBJKEY = rowkey_;
+   END;
+
+   -- Imputar comprador COMPRA_DIRETA quando a compra for direta.
+   IF order_code_ = '5' THEN
+      p3_ := 'BUYER_CODE' || chr(31) || 'COMPRA_DIRETA' || chr(30);
+      IFSCTR.PURCHASE_REQ_LINE_PART_API.MODIFY__(p0_, p1_, p2_, p3_, p4_);
+   ELSE
+      -- Nova ação para quando a compra não for direta. Verifica se o Cód Material começa em 1 ou I.
+      IF part_no_ LIKE '1%' OR part_no_ LIKE 'I%' THEN
+         buyer_code_ := User_Default_API.Get_Buyer_Code;
+      p3_ := 'BUYER_CODE' || chr(31) || buyer_code_ || chr(30);
+      IFSCTR.PURCHASE_REQ_LINE_PART_API.MODIFY__(p0_, p1_, p2_, p3_, p4_);
+   ELSE
+      -- Ação para quando a compra não for direta e o Cód Material começar com outros valores.
+         BEGIN
+            SELECT B.BUYER_CODE
+            INTO buyer_code_
+            FROM PURCHASE_PART B
+            WHERE COMPANY_SITE_API.Get_Company(B.contract) = company_
+            AND B.PART_NO = part_no_;
+         END;
+      END IF;
+
+      p3_ := 'BUYER_CODE' || chr(31) || buyer_code_ || chr(30);
+      IFSCTR.PURCHASE_REQ_LINE_PART_API.MODIFY__(p0_, p1_, p2_, p3_, p4_);
+   END IF;
+
+   COMMIT;
+
+END;
