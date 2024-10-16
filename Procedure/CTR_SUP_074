@@ -1,0 +1,31 @@
+CREATE OR REPLACE PROCEDURE CTR_SUP_074 (attr_ IN VARCHAR2) IS
+   rowkey_ VARCHAR2(32000) := client_sys.Get_Item_Value('rowkey',attr_);
+   -- p0 -> __lsResult
+   p0_ VARCHAR2(32000) := NULL;
+
+   -- p1 -> __sObjid
+   p1_ VARCHAR2(32000) := NULL;
+
+   -- p2 -> __lsObjversion
+   p2_ VARCHAR2(32000) := NULL;
+
+   -- p3 -> __lsAttr
+   p3_ VARCHAR2(32000) := NULL;
+
+   -- p4 -> __sAction
+   p4_ VARCHAR2(32000) := 'DO';
+
+   id_atualizado_ VARCHAR2(32000) := NULL;
+
+BEGIN
+    SELECT
+CASE WHEN PURCHASE_REQUISITION_API.Get_Requisitioner_Code(A.CF$_N_REQUISICAO) = 'WO' THEN 'MANUT' ELSE SUB_CONTRACT_API.Get_C_Manager_Group_Id(A.sub_con_no) END,
+  A.OBJID, A.OBJVERSION
+INTO id_atualizado_, p1_, p2_
+FROM SUB_CONTRACT_CFV A
+WHERE A.OBJKEY = rowkey_;
+
+   p3_ := 'C_MANAGER_GROUP_ID'||chr(31)||id_atualizado_||chr(30);
+IFSCTR.SUB_CONTRACT_API.MODIFY__( p0_ , p1_ , p2_ , p3_ , p4_ );
+
+END;
