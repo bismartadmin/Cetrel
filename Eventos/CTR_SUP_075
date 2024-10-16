@@ -1,0 +1,17 @@
+--Requisição de Compra RMD precisa que o método planejamento do material seja A.
+
+DECLARE
+part_no_ VARCHAR2(100) := '&NEW:PART_NO';
+contract_ VARCHAR2(100) := '&NEW:CONTRACT';
+purchase_code_ VARCHAR2(100) := '&NEW:PURCHASE_CODE';
+metodo_plan_ VARCHAR2(100) := INVENTORY_PART_CFP.Get_Cf$_Planning_Method(part_no_,contract_);
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Valor part no ' || part_no_ || ', contract ' || contract_ || ', purchase code ' || purchase_code_ || ', metodo ' || metodo_plan_);
+  IF purchase_code_ = 'RMD'
+  AND part_no_ LIKE '0%'
+  AND (metodo_plan_ <> 'A' OR metodo_plan_ IS NULL)
+    THEN
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_075: Requisição de Compra RMD precisa que o método planejamento do material seja A.');
+  END IF;
+END;
