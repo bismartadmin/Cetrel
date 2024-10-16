@@ -1,0 +1,44 @@
+--Insere o encargo de frete nos materiais de compra
+DECLARE
+    info_ VARCHAR2(32000);
+    objid_ VARCHAR2(32000);
+    objversion_ VARCHAR2(32000);
+    attr_ VARCHAR2(32000);
+BEGIN
+    FOR REC IN (
+        SELECT PS.*
+        FROM PURCHASE_PART_SUPPLIER PS
+        JOIN PURCHASE_CHARGE_TYPE CT
+            ON CT.CONTRACT = PS.CONTRACT
+            AND CT.CHARGE_TYPE = 'FRETE'
+        LEFT JOIN PURCH_CHARGE_PART_SUPPLIER PC
+            ON PC.VENDOR_NO = PS.VENDOR_NO 
+            AND PC.CONTRACT = PS.CONTRACT
+            AND PC.PART_NO = PS.PART_NO
+            AND PC.CHARGE_TYPE = CT.CHARGE_TYPE
+        WHERE PC.VENDOR_NO IS NULL
+    )
+    LOOP
+        info_ := '';
+        attr_ := '';
+        objid_ := '';
+        objversion_ := '';
+        
+        CLIENT_SYS.Add_To_Attr('VENDOR_NO',REC.VENDOR_NO, attr_);
+        CLIENT_SYS.Add_To_Attr('CONTRACT',REC.CONTRACT, attr_);
+        CLIENT_SYS.Add_To_Attr('PART_NO',REC.PART_NO, attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGE_TYPE','FRETE', attr_);
+        CLIENT_SYS.Add_To_Attr('DISTRIBUTE_CHARGE_BY','', attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGE_BY_SUPPLIER',REC.VENDOR_NO, attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGED_QTY','1', attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGE_AMOUNT','0', attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGE','', attr_);
+        CLIENT_SYS.Add_To_Attr('CHARGE_AMOUNT_INCL_TAX','0', attr_);
+        CLIENT_SYS.Add_To_Attr('PRINT_PURCHASE_CHARGE_DB','PRINT', attr_);
+        CLIENT_SYS.Add_To_Attr('UNIT_CHARGE_DB','FALSE', attr_);
+        CLIENT_SYS.Add_To_Attr('INTRASTAT_EXEMPT_DB','FALSE', attr_);
+        CLIENT_SYS.Add_To_Attr('DISTRIBUTE_ON_RECEIPT_DB','TRUE', attr_);
+        
+        PURCH_CHARGE_PART_SUPPLIER_API.New__( info_, objid_, objversion_, attr_, 'DO');
+    END LOOP;
+END;
