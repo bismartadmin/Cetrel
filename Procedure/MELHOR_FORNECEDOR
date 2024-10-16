@@ -1,0 +1,94 @@
+CREATE OR REPLACE PROCEDURE MELHOR_FORNECEDOR (attr_ IN VARCHAR2) IS
+   melhor_fornecedor_ VARCHAR2(3200) := NULL;
+   menor_preco_1_ VARCHAR2(3200) := NULL;
+   menor_preco_2_ VARCHAR2(3200) := NULL;
+   menor_preco_3_ VARCHAR2(3200) := NULL;
+   preco_1_ VARCHAR2(3200) := NULL;
+   preco_2_ VARCHAR2(3200) := NULL;
+   preco_3_ VARCHAR2(3200) := NULL;
+   melhor_entrega_1_ VARCHAR2(3200) := NULL;
+   melhor_entrega_2_ VARCHAR2(3200) := NULL;
+   melhor_entrega_3_ VARCHAR2(3200) := NULL;
+   entrega_1_ VARCHAR2(3200) := NULL;
+   entrega_2_ VARCHAR2(3200) := NULL;
+   entrega_3_ VARCHAR2(3200) := NULL;
+   inquiry_no_ VARCHAR2(3200) := client_sys.Get_Item_Value('inquiry_no',attr_);
+   line_no_ VARCHAR2(3200) := client_sys.Get_Item_Value('line_no',attr_);
+   p0_ VARCHAR2(32000) := '';
+   p1_ VARCHAR2(32000) := NULL;
+   p2_ VARCHAR2(32000) := NULL;
+   p3_ VARCHAR2(32000) := NULL;
+   p4_ VARCHAR2(32000) := 'DO';
+
+BEGIN
+
+--Buscar 1º menor valor
+SELECT Y.OBJID, Y.OBJVERSION, N.VENDOR_NO, (N.PRICE - ((N.PRICE/100)*N.DISCOUNT))
+INTO p1_, p2_, menor_preco_1_, preco_1_
+FROM PURCHASE_MAP_LINE Y
+LEFT JOIN QUOTATION_LINE_COM N ON Y.INQUIRY_NO = N.INQUIRY_NO AND Y.line_no = N.line_no
+  WHERE Y.INQUIRY_NO = inquiry_no_
+  AND Y.LINE_NO = line_no_
+ORDER BY (N.PRICE - ((N.PRICE/100)*N.DISCOUNT)) ASC FETCH FIRST ROW ONLY;
+
+--Buscar 2º menor valor
+SELECT Y.OBJID, Y.OBJVERSION, N.VENDOR_NO, (N.PRICE - ((N.PRICE/100)*N.DISCOUNT))
+INTO p1_, p2_, menor_preco_2_, preco_2_
+FROM PURCHASE_MAP_LINE Y
+LEFT JOIN QUOTATION_LINE_COM N ON Y.INQUIRY_NO = N.INQUIRY_NO AND Y.line_no = N.line_no
+  WHERE Y.INQUIRY_NO = inquiry_no_
+  AND Y.LINE_NO = line_no_
+ORDER BY (N.PRICE - ((N.PRICE/100)*N.DISCOUNT))
+OFFSET 1 ROWS
+FETCH NEXT 1 ROWS ONLY;
+
+-- Verificar se os preços são iguais ou se há um com melhor preço
+   IF preco_1_ = preco_2_ THEN
+
+-- Se os preços forem iguais, buscar a melhor condição de entrega
+ -- Buscar o fornecedor com a melhor condição de entrega
+ SELECT Y.OBJID, Y.OBJVERSION, N.VENDOR_NO, DECODE(N.DELIVERY_TERMS, 'CIF', 1,'CPT', '1','FOB', 2,'EWX', 2,'SFR', 3)
+INTO p1_, p2_, melhor_entrega_1_, entrega_1_
+FROM PURCHASE_MAP_LINE Y
+LEFT JOIN QUOTATION_ORDER N ON Y.INQUIRY_NO = N.INQUIRY_NO
+WHERE Y.INQUIRY_NO = inquiry_no_
+ORDER BY DECODE(N.DELIVERY_TERMS, 'CIF', 1,'CPT', '1','FOB', 2,'EWX', 2,'SFR', 3) ASC FETCH FIRST ROW ONLY;
+
+ -- Buscar o segundo fornecedor com a melhor condição de entrega
+ SELECT Y.OBJID, Y.OBJVERSION, N.VENDOR_NO, DECODE(N.DELIVERY_TERMS, 'CIF', 1,'CPT', '1','FOB', 2,'EWX', 2,'SFR', 3)
+INTO p1_, p2_, melhor_entrega_2_, entrega_2_
+FROM PURCHASE_MAP_LINE Y
+LEFT JOIN QUOTATION_ORDER N ON Y.INQUIRY_NO = N.INQUIRY_NO
+WHERE Y.INQUIRY_NO = inquiry_no_
+ORDER BY DECODE(N.DELIVERY_TERMS, 'CIF', 1,'CPT', '1','FOB', 2,'EWX', 2,'SFR', 3) ASC OFFSET 1 ROWS
+FETCH NEXT 1 ROWS ONLY;
+
+        -- Verificar a melhor condição de entrega
+        IF melhor_entrega_1_ < melhor_entrega_2_ THEN
+            p3_ := 'SUPPLIER_WINNER' || chr(31) || melhor_entrega_1_ || chr(30);
+  IFSCTR.PURCHASE_MAP_LINE_API.MODIFY__( p0_ , p1_ , p2_ , p3_ , p4_ );
+        ELSE
+          --Se também empatar, pega o 1 mesmo (data desejada é igual em todas cotações de ordem)
+            p3_ := 'SUPPLIER_WINNER' || chr(31) || melhor_entrega_1_ || chr(30);
+  IFSCTR.PURCHASE_MAP_LINE_API.MODIFY__( p0_ , p1_ , p2_ , p3_ , p4_ );
+        END IF;
+
+    ELSE
+        -- Ação se os preços forem diferentes
+        p3_ := 'SUPPLIER_WINNER' || chr(31) || menor_preco_1_ || chr(30);
+    END IF;
+
+    -- Exibir os valores das variáveis
+    DBMS_OUTPUT.PUT_LINE('Menor Preço 1: ' || TO_CHAR(menor_preco_1_));
+    DBMS_OUTPUT.PUT_LINE('Menor Preço 2: ' || TO_CHAR(menor_preco_2_));
+    DBMS_OUTPUT.PUT_LINE('Preço 1: ' || TO_CHAR(preco_1_));
+    DBMS_OUTPUT.PUT_LINE('Preço 2: ' || TO_CHAR(preco_2_));
+    DBMS_OUTPUT.PUT_LINE('Melhor Entrega 1: ' || TO_CHAR(melhor_entrega_1_));
+    DBMS_OUTPUT.PUT_LINE('Melhor Entrega 2: ' || TO_CHAR(melhor_entrega_2_));
+    DBMS_OUTPUT.PUT_LINE('Entrega 1: ' || TO_CHAR(entrega_1_));
+    DBMS_OUTPUT.PUT_LINE('Entrega 2: ' || TO_CHAR(entrega_2_));
+    DBMS_OUTPUT.PUT_LINE('P3_: ' || p3_);    
+
+  IFSCTR.PURCHASE_MAP_LINE_API.MODIFY__( p0_ , p1_ , p2_ , p3_ , p4_ );
+  COMMIT;
+END;
