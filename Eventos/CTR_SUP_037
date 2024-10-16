@@ -1,0 +1,14 @@
+--Bloquear inclusão de filial divergente na pré contabilização
+DECLARE
+contract_header_ VARCHAR2(3200) := '&NEW:CONTRACT';
+contract_pre_ VARCHAR2(3200) := '&CODE_C';
+
+BEGIN
+
+IF
+contract_pre_ <> contract_header_  THEN
+RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_037: A filial da pré-contabilização não pode ser divergente do preenchido no cabeçalho.');
+
+END IF;
+
+END; 
