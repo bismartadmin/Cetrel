@@ -1,0 +1,46 @@
+WITH results AS (
+    SELECT B.SUB_CON_NO SUB_CON_NO,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 1, NULL, 1) AS res1,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 2, NULL, 1) AS res2,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 3, NULL, 1) AS res3,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 4, NULL, 1) AS res4,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 5, NULL, 1) AS res5,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 6, NULL, 1) AS res6,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 7, NULL, 1) AS res7,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 8, NULL, 1) AS res8,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 9, NULL, 1) AS res9,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 10, NULL, 1) AS res10,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 11, NULL, 1) AS res11,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 12, NULL, 1) AS res12,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 13, NULL, 1) AS res13,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 14, NULL, 1) AS res14,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 15, NULL, 1) AS res15,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 16, NULL, 1) AS res16,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 17, NULL, 1) AS res17,
+        REGEXP_SUBSTR(B.C_QUALISIGN_SIGNATURES, 'Data Assinatura: (\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})', 1, 18, NULL, 1) AS res18
+    FROM IFSCTR.SUB_CON_REVISION B
+    WHERE B.STATE IN ('Active','Ativo')
+    AND B.C_QUALISIGN_SIGNATURES IS NOT NULL
+)
+SELECT SUB_CON_NO, TO_DATE(TO_CHAR(
+CASE WHEN
+GREATEST(nvl(res1,'01/01/1990'), nvl(res2,'01/01/1990'), nvl(res3,'01/01/1990'), nvl(res4,'01/01/1990'), nvl(res5,'01/01/1990'),
+nvl(res6,'01/01/1990'), nvl(res7,'01/01/1990'), nvl(res8,'01/01/1990'), nvl(res9,'01/01/1990'), nvl(res10,'01/01/1990'),
+nvl(res11,'01/01/1990'), nvl(res12,'01/01/1990'), nvl(res13,'01/01/1990'), nvl(res14,'01/01/1990'), nvl(res15,'01/01/1990'),
+nvl(res16,'01/01/1990'), nvl(res17,'01/01/1990'), nvl(res18,'01/01/1990')) = '01/01/1990' THEN NULL
+ELSE GREATEST(nvl(res1,'01/01/1990'), nvl(res2,'01/01/1990'), nvl(res3,'01/01/1990'), nvl(res4,'01/01/1990'), nvl(res5,'01/01/1990'),
+nvl(res6,'01/01/1990'), nvl(res7,'01/01/1990'), nvl(res8,'01/01/1990'), nvl(res9,'01/01/1990'), nvl(res10,'01/01/1990'),
+nvl(res11,'01/01/1990'), nvl(res12,'01/01/1990'), nvl(res13,'01/01/1990'), nvl(res14,'01/01/1990'), nvl(res15,'01/01/1990'),
+nvl(res16,'01/01/1990'), nvl(res17,'01/01/1990'), nvl(res18,'01/01/1990')) END
+),'DD/MM/YYYY HH24:MI:SS') MAIOR_DATA
+FROM results
+WHERE (CASE WHEN
+GREATEST(nvl(res1,'01/01/1990'), nvl(res2,'01/01/1990'), nvl(res3,'01/01/1990'), nvl(res4,'01/01/1990'), nvl(res5,'01/01/1990'),
+nvl(res6,'01/01/1990'), nvl(res7,'01/01/1990'), nvl(res8,'01/01/1990'), nvl(res9,'01/01/1990'), nvl(res10,'01/01/1990'),
+nvl(res11,'01/01/1990'), nvl(res12,'01/01/1990'), nvl(res13,'01/01/1990'), nvl(res14,'01/01/1990'), nvl(res15,'01/01/1990'),
+nvl(res16,'01/01/1990'), nvl(res17,'01/01/1990'), nvl(res18,'01/01/1990')) = '01/01/1990' THEN NULL
+ELSE GREATEST(nvl(res1,'01/01/1990'), nvl(res2,'01/01/1990'), nvl(res3,'01/01/1990'), nvl(res4,'01/01/1990'), nvl(res5,'01/01/1990'),
+nvl(res6,'01/01/1990'), nvl(res7,'01/01/1990'), nvl(res8,'01/01/1990'), nvl(res9,'01/01/1990'), nvl(res10,'01/01/1990'),
+nvl(res11,'01/01/1990'), nvl(res12,'01/01/1990'), nvl(res13,'01/01/1990'), nvl(res14,'01/01/1990'), nvl(res15,'01/01/1990'),
+nvl(res16,'01/01/1990'), nvl(res17,'01/01/1990'), nvl(res18,'01/01/1990')) END)
+IS NOT NULL
