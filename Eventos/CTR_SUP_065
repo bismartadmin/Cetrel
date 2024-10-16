@@ -1,0 +1,22 @@
+--Código de compra RSD só pode ser local de execução 'Sede do fornecedor'.
+
+DECLARE
+
+rowkey_ varchar2(4000) := '&NEW:ROWKEY';
+purchase_code_ varchar2(4000) := '&NEW:PURCHASE_CODE';
+local_execucao_ varchar2(4000) := NULL;
+
+BEGIN
+  
+SELECT 'S'
+INTO local_execucao_
+FROM PURCHASE_REQ_LINE_PART_CFT PRLP
+WHERE PRLP.ROWKEY = rowkey_
+AND PRLP.CF$_LOCAL_DE_EXECUCAO = 'SEDE_FORNECEDOR';
+EXCEPTION WHEN NO_DATA_FOUND THEN local_execucao_ := 'N';
+
+  IF purchase_code_ = 'RSD'
+    AND local_execucao_ = 'N' THEN
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_065: Em requisições de compra RSD, só é permitido SEDE DO FORNECEDOR.');
+   END IF;
+END;
