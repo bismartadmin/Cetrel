@@ -1,0 +1,31 @@
+--Obrigatoriedade de Escopo nas requisições  RS, RPS, RSD, RSE, RSDC, RSFU
+
+DECLARE
+  rowkey_ VARCHAR2(4000) := '&NEW:ROWKEY';
+  purchase_code_ VARCHAR2(4000) := '&NEW:PURCHASE_CODE';
+  escopo_ VARCHAR2(4000) := NULL;
+BEGIN
+  DBMS_OUTPUT.ENABLE;
+
+  DBMS_OUTPUT.PUT_LINE('Valor inicial de escopo_: ' || NVL(escopo_, 'NULL'));
+
+  BEGIN
+    SELECT 'S'
+    INTO escopo_
+    FROM PURCHASE_REQ_LINE_PART_CFT PRLP
+    WHERE PRLP.ROWKEY = rowkey_
+    AND PRLP.CF$_ESCOPO IS NULL;
+  EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+      escopo_ := 'N';
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('Valor de escopo_ após SELECT INTO: ' || escopo_);
+
+  IF purchase_code_ IN ('RS','RPS','RSD','RSE','RSDC','RSFU')
+    AND escopo_ = 'S' THEN
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_066: Em requisições de compra de serviço, o preenchimento do escopo é obrigatório.');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('Valor final de escopo_: ' || escopo_);
+END;
