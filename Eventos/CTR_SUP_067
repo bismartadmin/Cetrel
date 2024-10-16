@@ -1,0 +1,16 @@
+--Não permitir alteração do comprador COMPRA_DIRETA em RSD e RMD
+
+DECLARE
+buyer_code_old_ VARCHAR2(3200) := '&OLD:BUYER_CODE';
+buyer_code_new_ VARCHAR2(3200) := '&NEW:BUYER_CODE';
+purchase_code_ VARCHAR2(5) := '&NEW:PURCHASE_CODE';
+
+BEGIN
+
+  IF buyer_code_old_ = 'COMPRA_DIRETA' AND buyer_code_new_ <> 'COMPRA_DIRETA' THEN
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_067: Não é possível alterar o comprador COMPRA_DIRETA de requisições RSD e RMD');
+
+END IF;
+
+END;
