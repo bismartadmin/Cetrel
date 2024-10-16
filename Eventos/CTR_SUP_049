@@ -1,0 +1,21 @@
+--Não permitir requisição com materiais inativos
+DECLARE
+
+part_no_ VARCHAR2(25) := '&NEW:PART_NO';
+site_  VARCHAR2(10) := '&NEW:CONTRACT';
+inativo_ VARCHAR2(5) := NULL;
+
+BEGIN
+ 
+SELECT 'S'
+INTO inativo_
+FROM PURCHASE_PART_CFV PPC
+WHERE PPC.PART_NO = part_no_
+AND PPC.CONTRACT = site_
+AND (PPC.CF$_INATIVO_DB = 'NAO' OR PPC.CF$_INATIVO_DB IS NULL);
+EXCEPTION WHEN NO_DATA_FOUND THEN inativo_ := 'N';
+
+  IF inativo_ = 'N' THEN
+    RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_049: Este material se encontra inativo.');
+   END IF;
+END;
