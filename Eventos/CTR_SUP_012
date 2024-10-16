@@ -1,0 +1,23 @@
+--Evento para impedir liberação de requisição de compra acima de 10.000 quando o tipo for RMD ou 5.000 quando for RSD.
+BEGIN
+  IF  (
+   '&NEW:PURCHASE_CODE' IN ('RSD')
+    AND 
+    ('&NEW:ORIGINAL_QTY' * '&NEW:FBUY_UNIT_PRICE') > 20000 )
+    THEN 
+
+RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_012: Não é permitido requisição de compra RSD com valor acima de R$ 20.000,00.');
+
+ END IF;
+
+  IF  (
+   '&NEW:PURCHASE_CODE' IN ('RMD')
+    AND 
+    ('&NEW:ORIGINAL_QTY' * '&NEW:FBUY_UNIT_PRICE') > 10000 )
+    THEN 
+
+RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_012: Não é permitido requisição de compra RMD com valor acima de R$ 10.000,00.');
+
+ END IF;
+
+END;
