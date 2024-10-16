@@ -1,0 +1,23 @@
+--Não permitir remover linha de requisição liberada
+
+DECLARE
+
+requisition_no_ VARCHAR2(3200) := '&NEW:REQUISITION_NO';
+line_exists_ VARCHAR2(3200) := NULL;
+
+BEGIN
+
+SELECT COUNT(*)
+INTO line_exists_
+FROM PURCHASE_REQ_LINE_PART A
+WHERE A.REQUISITION_NO = requisition_no_;
+
+IF line_exists_ = 0 
+  
+THEN
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_068: Não é possível deixar a requisição liberada sem linhas.');
+
+END IF;
+
+END;
