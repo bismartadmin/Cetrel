@@ -1,0 +1,13 @@
+--Resgatar melhor fornecedor no mapa de compras.
+DECLARE
+   attr_      VARCHAR(3200) := NULL;
+   line_no_    VARCHAR2(3200) := '&NEW:LINE_NO';
+   inquiry_no_    VARCHAR2(3200) := '&NEW:INQUIRY_NO';
+
+BEGIN
+
+    client_sys.Add_To_Attr('line_no',line_no_, attr_);
+    client_sys.Add_To_Attr('inquiry_no',inquiry_no_, attr_);
+  transaction_SYS.Deferred_Call('MELHOR_FORNECEDOR', attr_);
+
+END;
