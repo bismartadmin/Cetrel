@@ -1,0 +1,43 @@
+--Caso não tenha sido incluso anexo na tela Avaliação de Subcontrato, o campo "Justificativa ausência anexo" deverá ser obrigatório
+DECLARE
+   subconno_anexo_       VARCHAR2(140) := NULL;
+   avaliacao_anexo_      VARCHAR2(140) := NULL;
+   subconno_             VARCHAR2(140) := '&NEW:SUB_CON_NO';
+   avaliacao_            VARCHAR2(140) := '&NEW:VALUATION_NO';
+   justificativa_        VARCHAR2(140) := '&JUSTIFICATIVA';
+   
+BEGIN
+
+BEGIN  
+   SELECT 'S'
+     INTO subconno_anexo_
+     FROM IFSCTR.DOC_REFERENCE_OBJECT
+    WHERE LU_NAME = 'SubvalValuation'
+      AND (REGEXP_SUBSTR(KEY_REF, '[^=^]+', INSTR(KEY_REF, '=') + 1)) = to_char(subconno_)
+      AND (SUBSTR(KEY_REF, INSTR(KEY_REF, '=', -1) + 1, INSTR(KEY_REF, '^', -1) - INSTR(KEY_REF, '=', -1) - 1)) = to_char(avaliacao_)
+     FETCH FIRST ROW ONLY;
+      EXCEPTION
+        WHEN NO_DATA_FOUND
+          THEN subconno_anexo_ := 'N';
+          IF subconno_anexo_ = 'N' AND justificativa_ IS NULL
+      THEN RAISE_APPLICATION_ERROR(-20100, 'CTR_SUP_019: Caso não tenha sido incluso anexo na tela Avaliação de Subcontrato, o campo "Justificativa ausência anexo" deverá ser obrigatório!');
+           END IF;
+      END;
+
+BEGIN
+      SELECT 'S'
+      INTO avaliacao_anexo_
+     FROM IFSCTR.DOC_REFERENCE_OBJECT
+    WHERE LU_NAME = 'SubvalValuation'
+      AND (SUBSTR(KEY_REF, INSTR(KEY_REF, '=', -1) + 1, INSTR(KEY_REF, '^', -1) - INSTR(KEY_REF, '=', -1) - 1)) = to_char(avaliacao_)
+      AND (REGEXP_SUBSTR(KEY_REF, '[^=^]+', INSTR(KEY_REF, '=') + 1)) = to_char(subconno_)
+     FETCH FIRST ROW ONLY;
+      EXCEPTION
+        WHEN NO_DATA_FOUND
+          THEN avaliacao_anexo_ := 'N';
+
+          IF avaliacao_anexo_ ='N' AND justificativa_ IS NULL
+      THEN RAISE_APPLICATION_ERROR(-20100, 'CTR_SUP_019: Caso não tenha sido incluso anexo na tela Avaliação de Subcontrato, o campo "Justificativa ausência anexo" deverá ser obrigatório!');
+         END IF;
+      END;
+END; 
