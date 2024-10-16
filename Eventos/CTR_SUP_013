@@ -1,0 +1,62 @@
+--Bloquear usuário inativo há mais de 180 dias
+DECLARE
+  fornecedor_   varchar2(32000);
+  ultima_data_  date;
+  data_sistema_ date := (sysdate - 180);
+  -- p0 -> __lsResult
+  p0_ VARCHAR2(32000) := NULL;
+
+  -- p1 -> __sObjid
+  p1_ VARCHAR2(32000) := NULL;
+
+  -- p2 -> __lsObjversion
+  p2_ VARCHAR2(32000) := NULL;
+
+  -- p3 -> __lsAttr
+  p3_ VARCHAR2(32000) := 'STATUS' || chr(31) || 'Inactive' || chr(30);
+
+  -- p4 -> __sAction
+  p4_ VARCHAR2(32000) := 'DO';
+
+  cursor huj_ is
+    select A.SUPPLIER_ID as FORNECEDOR,
+           MAX(E.ULTIMA_DATA) AS ULTIMA_DATA,
+           A.objid AS OBJID,
+           a.objversion AS OBJVERSION
+      from C_PORTAL_SUPPLIERS_USERS A
+     outer apply (select QO.vendor_no AS VENDOR_NO,
+                         max(TO_DATE(QO.date_created, 'DD/MM/RRRR')) AS ULTIMA_DATA
+                    from QUOTATION_ORDER QO
+                   WHERE A.SUPPLIER_ID = QO.VENDOR_NO
+                   GROUP BY QO.VENDOR_NO
+                  union all
+                  select PO.vendor_no AS VENDOR_NO,
+                         max(TO_DATE(PO.order_date, 'DD/MM/RRRR')) AS ULTIMA_DATA
+                    from purchase_order PO
+                   WHERE A.SUPPLIER_ID = PO.VENDOR_NO
+                   GROUP BY PO.VENDOR_NO
+                  union all
+                  select SQ.IDENTITY AS VENDOR_NO,
+                         max(TO_DATE(SQ.ledger_date, 'DD/MM/RRRR')) AS ULTIMA_DATA
+                    from SUPP_INV_INTEREST_FINE_QRY SQ
+                   WHERE A.SUPPLIER_ID = SQ.IDENTITY
+                   GROUP BY SQ.IDENTITY) E
+     where STATUS = 'Active'
+     GROUP BY SUPPLIER_ID, OBJID, OBJVERSION;
+
+BEGIN
+  for rec_ in huj_ loop
+    fornecedor_ := rec_.FORNECEDOR;
+    dbms_output.put_line(fornecedor_);
+    ultima_data_ := rec_.ULTIMA_DATA;
+    dbms_output.put_line(ultima_data_);
+    p1_ := rec_.OBJID;
+    p2_ := rec_.OBJVERSION;
+    if (ultima_data_ < data_sistema_) then
+      BEGIN
+        IFSCTR.C_PORTAL_SUPPLIERS_USERS_API.MODIFY__(p0_, p1_, p2_, p3_,  p4_);
+        COMMIT;
+      END;
+    END IF;
+  end loop;
+END;
