@@ -1,5 +1,5 @@
 --Validações do cadastro do Material de Estoque
-
+--ação 1
 BEGIN
 
   -- Verifica se o código do material não começa com '0' ou '5'
@@ -40,4 +40,48 @@ BEGIN
 
   END IF;
 
+END;
+
+
+
+--ação 2
+BEGIN
+  IF '&NEW:INVENTORY_VALUATION_METHOD' != 'ST' AND
+     (SUBSTR('&NEW:PART_NO', 1, 1) != '0' AND
+     SUBSTR('&NEW:PART_NO', 1, 1) != '5') THEN
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, o código dos materiais de estoque deve começar com ''0'' ou ''5''');
+
+--  ELSIF '&NEW:TYPE_CODE' != '3' THEN
+ --   RAISE_APPLICATION_ERROR(-20101,
+    --                        'CTR_SUP_057: Atenção, o Tipo de Material deve ser Comprado(mat prima)');
+
+  ELSIF '&NEW:INVENTORY_VALUATION_METHOD' != 'AV' AND
+        SUBSTR('&NEW:PART_NO', 1, 1) = '0' THEN
+
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, o Método de Valorização de Estoque deve ser (Média Ponderada) quando o código do material inicia em ''0''');
+
+  ELSIF  SUBSTR('&NEW:PART_NO', 1, 1) = '0' AND '&NEW:INVOICE_CONSIDERATION' != 'TRANSACTION BASED' THEN
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, Consideração Título Fornecedor não pode ser diferente de "C/ base na transação" quando o código do material inicia em ''0''');
+
+  ELSIF '&NEW:ZERO_COST_FLAG' !=  'N' AND SUBSTR('&NEW:PART_NO', 1, 1) = '0' THEN
+   RAISE_APPLICATION_ERROR(-20101,
+                          'CTR_SUP_057: Atenção, o Custo Zero deve ser (Custo Zero Proibido) quando o código do material inicia em ''0''');
+
+  ELSIF '&NEW:INVENTORY_VALUATION_METHOD' != 'ST' AND
+        SUBSTR('&NEW:PART_NO', 1, 1) = '5' THEN
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, o Método de Valorização de Estoque deve ser (Custo Padrão) quando o código do material inicia em ''5''');
+
+  ELSIF '&NEW:ZERO_COST_FLAG' != 'O' AND SUBSTR('&NEW:PART_NO', 1, 1) = '5' THEN
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, o Custo Zero deve ser (Apenas Custo Zero) quando o código do material inicia em ''5''');
+
+  ELSIF  SUBSTR('&NEW:PART_NO', 1, 1) = '5' AND '&NEW:INVOICE_CONSIDERATION' != 'IGNORE INVOICE PRICE' THEN
+    RAISE_APPLICATION_ERROR(-20101,
+                            'CTR_SUP_057: Atenção, Consideração Título Fornecedor não pode ser diferente de "Ignorar Preço Título" quando o código do material inicia em ''5''');
+
+  END IF;
 END;
