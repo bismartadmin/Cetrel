@@ -1,0 +1,19 @@
+--Não permitir aprovar itens com valor 0
+DECLARE
+preco_ VARCHAR2(30) := NULL;
+requisicao_ NUMBER(30) := '&NEW:FBUY_UNIT_PRICE';
+
+BEGIN
+BEGIN
+  SELECT 'S'
+  INTO preco_
+  FROM PURCHASE_REQ_LINE_PART A WHERE A.REQUISITION_NO = requisicao_
+  AND A.FBUY_UNIT_PRICE = '0';
+  EXCEPTION WHEN NO_DATA_FOUND THEN preco_ := 'N';
+END;
+
+IF preco_ = 'S'
+THEN RAISE_APPLICATION_ERROR(-20100,'CTR_SUP_039: Compras de materiais não podem ter custo 0.');
+
+END IF;
+END;
