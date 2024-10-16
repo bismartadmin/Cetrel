@@ -1,0 +1,36 @@
+--Impedir criação de linha enquanto não seja preenchido o C.Custo para puxar o CR Sintet
+DECLARE 
+
+pre_accounting_ varchar2(50) := '&NEW:PRE_ACCOUNTING_ID';
+ccusto_ varchar2(50) := NULL;
+ccusto_dist_ varchar2(50) := NULL;
+
+BEGIN  
+BEGIN
+SELECT 'S'
+INTO ccusto_
+FROM PRE_ACCOUNTING PA
+WHERE PA.PRE_ACCOUNTING_ID = pre_accounting_
+AND PA.codeno_b IS NOT NULL;
+EXCEPTION WHEN NO_DATA_FOUND THEN ccusto_ := 'N';
+END;
+
+BEGIN
+SELECT 'S'
+INTO ccusto_dist_
+FROM PRE_ACCOUNTING PA
+WHERE PA.parent_pre_accounting_id = pre_accounting_
+AND PA.codeno_b IS NOT NULL FETCH FIRST ROW ONLY;
+EXCEPTION WHEN NO_DATA_FOUND THEN ccusto_dist_ := 'N';
+END;
+
+
+  IF ccusto_dist_ = 'N' AND ccusto_ = 'N'
+
+   THEN
+
+    RAISE_APPLICATION_ERROR(-20100, 'CTR_SUP_041: É preciso preencher o campo C. Custo na pré-contabilização.');
+
+  END IF;
+
+END; 
