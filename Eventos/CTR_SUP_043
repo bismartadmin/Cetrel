@@ -1,0 +1,12 @@
+--Não permitir requisições com preço 0
+DECLARE
+fbuy_unit_price_ NUMBER := '&NEW:FBUY_UNIT_PRICE';
+purchase_code_ VARCHAR2(100) := '&NEW:PURCHASE_CODE';
+constant_rre CONSTANT VARCHAR2(100) := 'RRE';
+
+BEGIN
+  IF fbuy_unit_price_ = 0 AND  purchase_code_ <> constant_rre  THEN 
+    RAISE_APPLICATION_ERROR(-20100,
+      'CTR_SUP_043: Não é permitido criar requisição com custo 0');
+END IF;
+END; 
