@@ -1,0 +1,20 @@
+--Validação para garantir o valor correto da nf temporaria 
+
+DECLARE
+    v_state VARCHAR2(50);
+    v_vaval VARCHAR2(50) := '&NEW:VALUATION_VALUE';
+    v_vcont VARCHAR2(50) := '&NEW:ACCOUNTING_VALUE';
+    v_sub   VARCHAR2(50) := '&NEW:SUB_CON_NO';
+    v_valu  VARCHAR2(50) := '&NEW:VALUATION_NO';
+
+BEGIN
+    v_state := subval_valuation_api.get_objstate(v_sub, v_valu);
+     DBMS_OUTPUT.PUT_LINE('Valor em v_vaval: ' || v_vaval);
+    DBMS_OUTPUT.PUT_LINE('Valor em v_vcont: ' || v_vcont);
+    DBMS_OUTPUT.PUT_LINE('Status: ' || v_state);
+    
+    IF v_state IN ('Application Received', 'Certification In Progress', 'Partially Invoiced') AND ROUND(TO_NUMBER(v_vaval), 2) <> v_vcont THEN
+        RAISE_APPLICATION_ERROR(-20100, 'CTR_SUP_060: ERRO SUBVAL_VALUATION_LINE_ITEM_TAB: Atenção, Volte esta avaliação para o status Planejado e atualize os detalhes do contrato antes de prosseguir.');
+    END IF;
+
+END; 
