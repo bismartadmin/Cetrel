@@ -1,0 +1,14 @@
+--Obrigatoriedade do preenchimento do Código de Compra
+DECLARE
+
+purchase_code_ VARCHAR2(5) := '&NEW:PURCHASE_CODE';
+
+BEGIN
+  
+IF purchase_code_ IS NULL THEN  
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_047: O campo Código de Compra é obrigatório.');
+
+END IF;
+
+END; 
