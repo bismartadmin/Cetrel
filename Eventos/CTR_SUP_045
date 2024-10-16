@@ -1,0 +1,38 @@
+--Não permite material começado com 1 quando for ordem de serviço
+--ação 1
+DECLARE
+
+part_no_ VARCHAR2(3200) := '&NEW:PART_NO';
+purchase_code_ VARCHAR2(3200) := '&NEW:PURCHASE_CODE';
+
+BEGIN
+
+  IF part_no_ LIKE '0%'
+AND purchase_code_ IN ('RS','RPS','RSD','RSE','RSDC','RSFU')
+
+THEN
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_045: Não é possível incluir material de estoque em uma requisição de serviço');
+
+END IF;
+
+END;
+
+--ação 2
+DECLARE
+
+part_no_ VARCHAR2(3200) := '&NEW:PART_NO';
+purchase_code_ VARCHAR2(3200) := '&NEW:PURCHASE_CODE';
+
+BEGIN
+
+  IF part_no_ LIKE '1%'
+    AND purchase_code_ NOT IN ('RS','RPS','RSD','RSE','RSDC','RSFU')
+
+THEN
+    RAISE_APPLICATION_ERROR(-20100,
+                            'CTR_SUP_045: Não é possível incluir serviço em uma requisição de material');
+
+END IF;
+
+END;
